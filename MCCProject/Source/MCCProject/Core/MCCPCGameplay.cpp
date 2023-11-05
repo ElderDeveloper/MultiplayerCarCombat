@@ -7,8 +7,11 @@
 #include "MCCGMGameplay.h"
 #include "NiagaraFunctionLibrary.h"
 #include "Blueprint/AIBlueprintHelperLibrary.h"
+#include "Blueprint/UserWidget.h"
 #include "GameFramework/PlayerState.h"
-/*
+#include "MCCProject/Interface/MCCPlayerInterface.h"
+#include "MCCProject/UI/Gameplay/MCCGameplayWidget.h"
+
 
 AMCCPCGameplay::AMCCPCGameplay()
 {
@@ -17,6 +20,13 @@ AMCCPCGameplay::AMCCPCGameplay()
 	bShowMouseCursor = true;
 	DefaultMouseCursor = EMouseCursor::Default;
 	TargetDestination = FVector::ZeroVector;
+	InputDownTime = 0.f;
+	SetDestinationClickAction = nullptr;
+	DefaultMappingContext = nullptr;
+	PlayerPawnClass = nullptr;
+	FXCursor = nullptr;
+	GameplayWidgetClass = nullptr;
+	
 }
 
 
@@ -24,6 +34,7 @@ void AMCCPCGameplay::OnInputStarted()
 {
 	StopMovement();
 }
+
 
 void AMCCPCGameplay::OnSetDestinationTriggered()
 {
@@ -50,6 +61,7 @@ void AMCCPCGameplay::OnSetDestinationTriggered()
 	}
 }
 
+
 void AMCCPCGameplay::OnSetDestinationReleased()
 {
 	// If it was a short press
@@ -59,11 +71,13 @@ void AMCCPCGameplay::OnSetDestinationReleased()
 		UAIBlueprintHelperLibrary::SimpleMoveToLocation(this, TargetDestination);
 		UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, FXCursor, TargetDestination, FRotator::ZeroRotator, FVector(1.f, 1.f, 1.f), true, true, ENCPoolMethod::None, true);
 	}
-
 	InputDownTime = 0.f;
 }
 
 
+void AMCCPCGameplay::OnPlayerDeath(APlayerState* Killer)
+{
+}
 
 void AMCCPCGameplay::RequestRespawn()
 {
@@ -72,6 +86,7 @@ void AMCCPCGameplay::RequestRespawn()
 		GMGameplay->ReceiveSpawnPlayer(this);
 	}
 }
+
 
 void AMCCPCGameplay::RequestRespawnDelay()
 {
@@ -82,39 +97,65 @@ void AMCCPCGameplay::RequestRespawnDelay()
 	}, RespawnDelay, false );
 }
 
-void AMCCPCGameplay::PlayerCharacterSpawned()
+
+void AMCCPCGameplay::UpdateHealthBar()
 {
+	if (GameplayWidget)
+	{
+		if (!GetPawn())
+		{
+			// To Not Divide By Zero
+			GameplayWidget->UpdateHealthBar( 0,1);
+		}
+		else if (GetPawn()->GetClass()->ImplementsInterface(UMCCPlayerInterface::StaticClass()))
+		{
+			GameplayWidget->UpdateHealthBar(IMCCPlayerInterface::Execute_GetHealth(GetPawn()),IMCCPlayerInterface::Execute_GetMaxHealth(GetPawn()));
+		}
+	}
 }
+
 
 void AMCCPCGameplay::BeginPlay()
 {
 	Super::BeginPlay();
-
-	//Add Input Mapping Context
 	if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer()))
 	{
 		Subsystem->AddMappingContext(DefaultMappingContext, 0);
 	}
-	
 	RequestRespawn();
+
+	if (IsLocalController() && IsValid(GameplayWidgetClass))
+	{
+		GameplayWidget = CreateWidget<UMCCGameplayWidget>(this, GameplayWidgetClass);
+		if (GameplayWidget)
+		{
+			GameplayWidget->AddToViewport();
+		}
+	}
 }
+
 
 void AMCCPCGameplay::OnPossess(APawn* InPawn)
 {
 	Super::OnPossess(InPawn);
 	PlayerCharacterSpawned();
+	UpdateHealthBar();
 }
+
 
 void AMCCPCGameplay::OnUnPossess()
 {
 	Super::OnUnPossess();
+	UpdateHealthBar();
 	RequestRespawn();
 }
+
 
 void AMCCPCGameplay::SetupInputComponent()
 {
 	Super::SetupInputComponent();
 	// Set up action bindings
+
 	if (UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(InputComponent))
 	{
 		// Setup mouse input events
@@ -125,9 +166,9 @@ void AMCCPCGameplay::SetupInputComponent()
 	}
 }
 
-FName AMCCPCGameplay::GetPlayerName() const
+
+FName AMCCPCGameplay::GetPlayerDisplayName() const
 {
 	return *PlayerState->GetPlayerName();
 }
 
-*/

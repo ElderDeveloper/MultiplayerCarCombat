@@ -6,23 +6,24 @@
 #include "GameFramework/PlayerController.h"
 #include "MCCPCGameplay.generated.h"
 
+
+class UMCCGameplayWidget;
 class AMCCPlayerPawn;
 class UNiagaraSystem;
 class UUserWidget;
 class UInputMappingContext;
 class UInputAction;
-class UAbilitySystemComponent;
-/**
- * 
- */
+
+
 UCLASS()
 class MCCPROJECT_API AMCCPCGameplay : public APlayerController
 {
 	GENERATED_BODY()
 
 public:
-	/*
+
 	AMCCPCGameplay();
+
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Player")
 	TSubclassOf<AMCCPlayerPawn> PlayerPawnClass;
@@ -32,20 +33,24 @@ public:
 	UNiagaraSystem* FXCursor;
 
 	UPROPERTY(EditAnywhere , BlueprintReadWrite , Category = "UI")
-	TSubclassOf<UUserWidget> PlayerScoreboardClass;
+	TSubclassOf<UUserWidget> GameplayWidgetClass;
 
 	// MappingContext
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
 	UInputMappingContext* DefaultMappingContext;
-	
+
 	// Click Input Action
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
 	UInputAction* SetDestinationClickAction;
-	
+
+
+	UFUNCTION()
+	void OnPlayerDeath(APlayerState* Killer);
 
 	UFUNCTION(BlueprintCallable , Category = "Gameplay")
 	virtual void RequestRespawn();
 	virtual void RequestRespawnDelay();
+
 
 protected:
 
@@ -55,14 +60,12 @@ protected:
 	UPROPERTY(EditDefaultsOnly , BlueprintReadOnly , Category = "Respawn")
 	float RespawnDelay;
 
-
-	UPROPERTY(BlueprintReadOnly)
-	UAbilitySystemComponent* AbilitySystemComponent;
-
 	FVector TargetDestination;
 	float InputDownTime;
-	
-	void PlayerCharacterSpawned();
+	UPROPERTY()
+	UMCCGameplayWidget* GameplayWidget;
+
+	void UpdateHealthBar();
 
 	// Input handlers for SetDestination action.
 	void OnInputStarted();
@@ -77,7 +80,6 @@ protected:
 public:
 	
 	UFUNCTION(BlueprintPure , Category = "Gameplay")
-	FName GetPlayerName() const;
-
-	*/
+	FName GetPlayerDisplayName() const;
 };
+

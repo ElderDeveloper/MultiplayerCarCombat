@@ -18,9 +18,9 @@ public class MCCProject : ModuleRules
 	        "AIModule", 
 	        "Niagara", 
 	        "EnhancedInput",
-	        "GameplayAbilities",
 	        "GameplayTags",
-	        "UMG"
+	        "UMG",
+	        "ChaosVehicles"
         });
     }
 }

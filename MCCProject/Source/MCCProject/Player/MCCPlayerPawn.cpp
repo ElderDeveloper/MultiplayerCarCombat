@@ -1,12 +1,11 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "MCCPlayerPawn.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "Net/UnrealNetwork.h"
 
 
-// Sets default values
 AMCCPlayerPawn::AMCCPlayerPawn()
 {
 	PrimaryActorTick.bCanEverTick = true;
@@ -27,25 +26,30 @@ AMCCPlayerPawn::AMCCPlayerPawn()
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("TopDownCamera"));
 	CameraComponent->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	CameraComponent->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
-
 }
 
-// Called when the game starts or when spawned
-void AMCCPlayerPawn::BeginPlay()
-{
-	Super::BeginPlay();
-	
-}
 
-// Called every frame
-void AMCCPlayerPawn::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-}
-
-// Called to bind functionality to input
 void AMCCPlayerPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
+}
+
+
+void AMCCPlayerPawn::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(AMCCPlayerPawn , Health );
+	DOREPLIFETIME(AMCCPlayerPawn , MaxHealth );
+}
+
+
+float AMCCPlayerPawn::GetHealth_Implementation()
+{
+	return Health;
+}
+
+float AMCCPlayerPawn::GetMaxHealth_Implementation()
+{
+	return MaxHealth;
 }
 
