@@ -81,3 +81,4 @@ MCCProject/Plugins/*/Intermediate/*
 # Cache files for the editor to use
 DerivedDataCache/*
 MCCProject/DerivedDataCache/*
+MCCProject/Platforms/HoloLens/Config/HoloLensEngine.ini
