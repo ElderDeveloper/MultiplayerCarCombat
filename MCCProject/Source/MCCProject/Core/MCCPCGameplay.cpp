@@ -1,7 +1,6 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 #include "MCCPCGameplay.h"
-
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "MCCGMGameplay.h"
@@ -138,7 +137,6 @@ void AMCCPCGameplay::BeginPlay()
 void AMCCPCGameplay::OnPossess(APawn* InPawn)
 {
 	Super::OnPossess(InPawn);
-	PlayerCharacterSpawned();
 	UpdateHealthBar();
 }
 
@@ -154,7 +152,6 @@ void AMCCPCGameplay::OnUnPossess()
 void AMCCPCGameplay::SetupInputComponent()
 {
 	Super::SetupInputComponent();
-	// Set up action bindings
 
 	if (UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(InputComponent))
 	{

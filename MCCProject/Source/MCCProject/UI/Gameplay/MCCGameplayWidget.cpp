@@ -47,10 +47,10 @@ void UMCCGameplayWidget::UpdateHealthBar(float CurrentHealth, float MaxHealth)
 	{
 		ProgressBarHealth->SetPercent(CurrentHealth / MaxHealth);
 
-		const ESlateVisibility Visibility = CurrentHealth <= 0.f ? ESlateVisibility::Visible : ESlateVisibility::Collapsed;
-		if (ProgressBarHealth->GetVisibility() != Visibility)
+		const ESlateVisibility NewVisibility = CurrentHealth <= 0.f ? ESlateVisibility::Visible : ESlateVisibility::Collapsed;
+		if (ProgressBarHealth->GetVisibility() != NewVisibility)
 		{
-			ProgressBarHealth->SetVisibility(Visibility);
+			ProgressBarHealth->SetVisibility(NewVisibility);
 		}
 	}
 }
