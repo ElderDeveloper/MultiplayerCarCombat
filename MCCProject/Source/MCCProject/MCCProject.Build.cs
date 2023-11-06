@@ -20,6 +20,7 @@ public class MCCProject : ModuleRules
 	        "EnhancedInput",
 	        "GameplayTags",
 	        "UMG",
+	        "SlateCore",
 	        "ChaosVehicles"
         });
     }

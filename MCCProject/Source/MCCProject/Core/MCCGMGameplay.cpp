@@ -24,13 +24,14 @@ AMCCGMGameplay::AMCCGMGameplay()
 void AMCCGMGameplay::ReceiveSpawnPlayer(AMCCPCGameplay* PlayerController)
 {
 	FTransform SpawnTransform;
-	if (FindPlayerStartPoint(SpawnTransform))
+	if (FindPlayerStartPoint(SpawnTransform) && PlayerController)
 	{
 		FActorSpawnParameters SpawnParameters;
 		SpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 		SpawnParameters.Owner = PlayerController;
+		SpawnTransform.SetScale3D(FVector(1.f));
 
-		if(const auto SpawnedCharacter = GetWorld()->SpawnActor<AMCCPlayerPawn>(AMCCPlayerPawn::StaticClass() , SpawnTransform , SpawnParameters))
+		if(const auto SpawnedCharacter = GetWorld()->SpawnActor<AMCCPlayerPawn>(PlayerController->PlayerPawnClass , SpawnTransform , SpawnParameters))
 		{
 			PlayerController->Possess(SpawnedCharacter);
 		}
@@ -38,6 +39,10 @@ void AMCCGMGameplay::ReceiveSpawnPlayer(AMCCPCGameplay* PlayerController)
 		{
 			UKismetSystemLibrary::PrintString( GetWorld() , FString::Printf(TEXT("Spawn Player Not Spawned")) , true , true , FLinearColor::Red , 5.f);
 		}
+	}
+	else
+	{
+		UKismetSystemLibrary::PrintString( GetWorld() , FString::Printf(TEXT("Spawn Location Not Found")) , true , true , FLinearColor::Red , 5.f);
 	}
 }
 
@@ -86,6 +91,11 @@ void AMCCGMGameplay::BeginPlay()
 void AMCCGMGameplay::OnPostLogin(AController* NewPlayer)
 {
 	Super::OnPostLogin(NewPlayer);
+
+	if (const auto PCGameplay = Cast<AMCCPCGameplay>(NewPlayer))
+	{
+		PCGameplay->RequestRespawnDelay();
+	}
 }
 
 void AMCCGMGameplay::Logout(AController* Exiting)

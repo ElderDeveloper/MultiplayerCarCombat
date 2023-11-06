@@ -15,7 +15,7 @@
 AMCCPCGameplay::AMCCPCGameplay()
 {
 	bShouldHaveRespawnDelay = false;
-	RespawnDelay = 5.0f;
+	RespawnDelay = 1.0f;
 	bShowMouseCursor = true;
 	DefaultMouseCursor = EMouseCursor::Default;
 	TargetDestination = FVector::ZeroVector;
@@ -89,11 +89,16 @@ void AMCCPCGameplay::RequestRespawn()
 
 void AMCCPCGameplay::RequestRespawnDelay()
 {
-	FTimerHandle TimerHandle;
-	GetWorld()->GetTimerManager().SetTimer(  TimerHandle , [this]() 
+	if (HasAuthority())
 	{
-		RequestRespawn();
-	}, RespawnDelay, false );
+		FTimerHandle TimerHandle;
+		GetWorld()->GetTimerManager().SetTimer(  TimerHandle , [this]() 
+		{
+			UE_LOG(LogTemp , Warning , TEXT("Delayed Respawn"));
+			RequestRespawn();
+		}, RespawnDelay, false );
+	}
+
 }
 
 
@@ -110,6 +115,14 @@ void AMCCPCGameplay::UpdateHealthBar()
 		{
 			GameplayWidget->UpdateHealthBar(IMCCPlayerInterface::Execute_GetHealth(GetPawn()),IMCCPlayerInterface::Execute_GetMaxHealth(GetPawn()));
 		}
+		else
+		{
+			UE_LOG(LogTemp , Error , TEXT("Pawn does not implement IMCCPlayerInterface"));
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp , Error , TEXT("GameplayWidget is nullptr"));
 	}
 }
 
@@ -117,18 +130,20 @@ void AMCCPCGameplay::UpdateHealthBar()
 void AMCCPCGameplay::BeginPlay()
 {
 	Super::BeginPlay();
-	if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer()))
-	{
-		Subsystem->AddMappingContext(DefaultMappingContext, 0);
-	}
-	RequestRespawn();
 
-	if (IsLocalController() && IsValid(GameplayWidgetClass))
+	if (IsLocalController())
 	{
-		GameplayWidget = CreateWidget<UMCCGameplayWidget>(this, GameplayWidgetClass);
-		if (GameplayWidget)
+		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer()))
 		{
-			GameplayWidget->AddToViewport();
+			Subsystem->AddMappingContext(DefaultMappingContext, 0);
+		}
+		if (IsValid(GameplayWidgetClass))
+		{
+			GameplayWidget = CreateWidget<UMCCGameplayWidget>(this, GameplayWidgetClass);
+			if (GameplayWidget)
+			{
+				GameplayWidget->AddToViewport();
+			}
 		}
 	}
 }

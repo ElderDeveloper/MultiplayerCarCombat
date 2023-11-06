@@ -11,6 +11,7 @@
 #include "KillNotify/MCCKillNotifyWidget.h"
 #include "MCCProject/Core/MCCGSGameplay.h"
 #include "MCCProject/Core/MCCPSGameplay.h"
+#include "SlateCore/Public/Fonts/SlateFontInfo.h"
 
 
 void UMCCGameplayWidget::UpdateScoreboard()
@@ -27,6 +28,9 @@ void UMCCGameplayWidget::UpdateScoreboard()
 				{
 					if (UTextBlock* TextBlockWidget = WidgetTree->ConstructWidget<UTextBlock>(UTextBlock::StaticClass()))
 					{
+						FSlateFontInfo NewFont = TextBlockWidget->GetFont();
+						NewFont.Size = 11;;
+						TextBlockWidget->SetFont(NewFont);
 						if (const auto VBChild = VBPlayerScoreboard->AddChildToVerticalBox(TextBlockWidget))
 						{
 							VBChild->SetHorizontalAlignment(HAlign_Fill);
