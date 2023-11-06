@@ -8,14 +8,14 @@
 #include "Blueprint/AIBlueprintHelperLibrary.h"
 #include "Blueprint/UserWidget.h"
 #include "GameFramework/PlayerState.h"
-#include "MCCProject/Interface/MCCPlayerInterface.h"
+#include "MCCProject/Player/MCCPlayerPawn.h"
 #include "MCCProject/UI/Gameplay/MCCGameplayWidget.h"
 
 
 AMCCPCGameplay::AMCCPCGameplay()
 {
 	bShouldHaveRespawnDelay = false;
-	RespawnDelay = 1.0f;
+	RespawnDelay = 0.1f;
 	bShowMouseCursor = true;
 	DefaultMouseCursor = EMouseCursor::Default;
 	TargetDestination = FVector::ZeroVector;
@@ -50,6 +50,18 @@ void AMCCPCGameplay::OnSetDestinationTriggered()
 	if (bHitSuccessful)
 	{
 		TargetDestination = Hit.Location;
+	
+	}
+	if (const auto PlayerPawn = Cast<AMCCPlayerPawn>(GetPawn()))
+	{
+		if (InputDownTime > 0.5)
+		{
+			PlayerPawn->SetMouseHoldDownPosition(TargetDestination , true);
+		}
+		else
+		{
+			PlayerPawn->SetMouseHoldDownPosition(TargetDestination , false);
+		}
 	}
 	
 	// Move towards
@@ -63,13 +75,13 @@ void AMCCPCGameplay::OnSetDestinationTriggered()
 
 void AMCCPCGameplay::OnSetDestinationReleased()
 {
-	// If it was a short press
-	if (InputDownTime <= 0.5)
+	if (const auto PlayerPawn = Cast<AMCCPlayerPawn>(GetPawn()))
 	{
-		// We move there and spawn some particles
-		UAIBlueprintHelperLibrary::SimpleMoveToLocation(this, TargetDestination);
-		UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, FXCursor, TargetDestination, FRotator::ZeroRotator, FVector(1.f, 1.f, 1.f), true, true, ENCPoolMethod::None, true);
+		PlayerPawn->SetMouseHoldDownPosition(TargetDestination , false);
+		PlayerPawn->SetTargetAIPath(TargetDestination);
 	}
+	
+	UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, FXCursor, TargetDestination, FRotator::ZeroRotator, FVector(1.f, 1.f, 1.f), true, true, ENCPoolMethod::None, true);
 	InputDownTime = 0.f;
 }
 
@@ -78,11 +90,18 @@ void AMCCPCGameplay::OnPlayerDeath(APlayerState* Killer)
 {
 }
 
-void AMCCPCGameplay::RequestRespawn()
+void AMCCPCGameplay::RequestRespawn(float Delay)
 {
-	if (const auto GMGameplay = GetWorld()->GetAuthGameMode<AMCCGMGameplay>())
+	if (HasAuthority())
 	{
-		GMGameplay->ReceiveSpawnPlayer(this);
+		FTimerHandle TimerHandle;
+		GetWorld()->GetTimerManager().SetTimer(  TimerHandle , [this]() 
+		{
+			if (const auto GMGameplay = GetWorld()->GetAuthGameMode<AMCCGMGameplay>())
+			{
+				GMGameplay->ReceiveSpawnPlayer(this);
+			}
+		}, Delay, false );
 	}
 }
 
@@ -97,32 +116,6 @@ void AMCCPCGameplay::RequestRespawnDelay()
 			UE_LOG(LogTemp , Warning , TEXT("Delayed Respawn"));
 			RequestRespawn();
 		}, RespawnDelay, false );
-	}
-
-}
-
-
-void AMCCPCGameplay::UpdateHealthBar()
-{
-	if (GameplayWidget)
-	{
-		if (!GetPawn())
-		{
-			// To Not Divide By Zero
-			GameplayWidget->UpdateHealthBar( 0,1);
-		}
-		else if (GetPawn()->GetClass()->ImplementsInterface(UMCCPlayerInterface::StaticClass()))
-		{
-			GameplayWidget->UpdateHealthBar(IMCCPlayerInterface::Execute_GetHealth(GetPawn()),IMCCPlayerInterface::Execute_GetMaxHealth(GetPawn()));
-		}
-		else
-		{
-			UE_LOG(LogTemp , Error , TEXT("Pawn does not implement IMCCPlayerInterface"));
-		}
-	}
-	else
-	{
-		UE_LOG(LogTemp , Error , TEXT("GameplayWidget is nullptr"));
 	}
 }
 
@@ -152,15 +145,22 @@ void AMCCPCGameplay::BeginPlay()
 void AMCCPCGameplay::OnPossess(APawn* InPawn)
 {
 	Super::OnPossess(InPawn);
-	UpdateHealthBar();
 }
 
 
 void AMCCPCGameplay::OnUnPossess()
 {
 	Super::OnUnPossess();
-	UpdateHealthBar();
-	RequestRespawn();
+	
+	if (bShouldHaveRespawnDelay)
+	{
+		RequestRespawnDelay();
+	}
+	else
+	{
+		// Instant respawn causes possess issues.
+		RequestRespawn(0.1);
+	}
 }
 
 

@@ -9,7 +9,6 @@ void UMCCKillNotifyEntryWidget::SetupWidget(APlayerState* Killer, APlayerState* 
 {
 	if (TextKiller && TextVictim && Killer && Victim)
 	{
-		StoredVictim = Victim;
 		if (const auto PSKiller = Cast<AMCCPSGameplay>(Killer))
 		{
 			TextKiller->SetText(FText::FromString(Killer->GetPlayerName()));

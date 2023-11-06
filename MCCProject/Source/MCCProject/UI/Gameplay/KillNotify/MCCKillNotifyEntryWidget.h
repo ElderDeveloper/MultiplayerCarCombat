@@ -15,10 +15,6 @@ class MCCPROJECT_API UMCCKillNotifyEntryWidget : public UUserWidget
 	GENERATED_BODY()
 
 public:
-	
-	UPROPERTY()
-	APlayerState* StoredVictim;
-	
 	void SetupWidget(APlayerState* Killer ,APlayerState* Victim);
 
 	// Implement this function to play destroy animation

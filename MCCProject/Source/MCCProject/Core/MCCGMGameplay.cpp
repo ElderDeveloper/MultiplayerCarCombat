@@ -20,7 +20,6 @@ AMCCGMGameplay::AMCCGMGameplay()
 }
 
 
-
 void AMCCGMGameplay::ReceiveSpawnPlayer(AMCCPCGameplay* PlayerController)
 {
 	FTransform SpawnTransform;
@@ -47,7 +46,6 @@ void AMCCGMGameplay::ReceiveSpawnPlayer(AMCCPCGameplay* PlayerController)
 }
 
 
-
 bool AMCCGMGameplay::FindPlayerStartPoint(FTransform& PlayerTransform)
 {
 	if(PlayerStartPoints.IsValidIndex(0))
@@ -61,7 +59,6 @@ bool AMCCGMGameplay::FindPlayerStartPoint(FTransform& PlayerTransform)
 	}
 	return false;
 }
-
 
 
 void AMCCGMGameplay::FindAllPlayerStartPoints()
@@ -79,13 +76,11 @@ void AMCCGMGameplay::FindAllPlayerStartPoints()
 }
 
 
-
 void AMCCGMGameplay::BeginPlay()
 {
 	Super::BeginPlay();
 	FindAllPlayerStartPoints();
 }
-
 
 
 void AMCCGMGameplay::OnPostLogin(AController* NewPlayer)
@@ -97,6 +92,7 @@ void AMCCGMGameplay::OnPostLogin(AController* NewPlayer)
 		PCGameplay->RequestRespawnDelay();
 	}
 }
+
 
 void AMCCGMGameplay::Logout(AController* Exiting)
 {

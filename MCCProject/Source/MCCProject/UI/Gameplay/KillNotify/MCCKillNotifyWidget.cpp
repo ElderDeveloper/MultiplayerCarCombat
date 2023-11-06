@@ -11,16 +11,6 @@ void UMCCKillNotifyWidget::OnReceiveKillNotify(APlayerState* Killer ,APlayerStat
 {
 	if (KillEntryClass != nullptr)
 	{
-		for (const auto Child : VBKillNotify->GetAllChildren())
-		{
-			if (const auto KillEntry = Cast<UMCCKillNotifyEntryWidget>(Child))
-			{
-				if (KillEntry->StoredVictim == Victim)
-				{
-					return;
-				}
-			}
-		}
 		if (const auto KillWidget = CreateWidget<UMCCKillNotifyEntryWidget>(GetOwningPlayer(),KillEntryClass))
 		{
 			if (const auto VBChild = VBKillNotify->AddChildToVerticalBox(KillWidget))

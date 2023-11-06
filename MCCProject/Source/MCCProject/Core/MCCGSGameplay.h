@@ -8,6 +8,7 @@
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnReceiveKill , APlayerState* , Killer , APlayerState* , Victim);
 
+
 UCLASS()
 class MCCPROJECT_API AMCCGSGameplay : public AGameStateBase
 {
@@ -20,4 +21,11 @@ public:
 	
 	UFUNCTION(BlueprintCallable ,  Category = "Gameplay")
 	virtual void ReceiveKill(APlayerState* Killer ,  APlayerState* Victim);
+
+protected:
+
+	UFUNCTION(NetMulticast , Reliable)
+	void Multi_BroadcastKill(APlayerState* Killer , APlayerState* Victim);
+
+	
 };

@@ -2,9 +2,7 @@
 
 
 #include "MCCGameplayWidget.h"
-
 #include "Blueprint/WidgetTree.h"
-#include "Components/ProgressBar.h"
 #include "Components/TextBlock.h"
 #include "Components/VerticalBox.h"
 #include "Components/VerticalBoxSlot.h"
@@ -19,52 +17,34 @@ void UMCCGameplayWidget::UpdateScoreboard()
 	if (VBPlayerScoreboard)
 	{
 		VBPlayerScoreboard->ClearChildren();
-		
-		if (const auto GSGameplay = Cast<AMCCGSGameplay>(GetWorld()->GetGameState()))
+
+		for (const auto PS : GetWorld()->GetGameState()->PlayerArray)
 		{
-			for (const auto PS : GSGameplay->PlayerArray)
+			if (const auto PSGameplay = Cast<AMCCPSGameplay>(PS))
 			{
-				if (const auto PSGameplay = Cast<AMCCPSGameplay>(PS))
-				{
-					if (UTextBlock* TextBlockWidget = WidgetTree->ConstructWidget<UTextBlock>(UTextBlock::StaticClass()))
-					{
-						FSlateFontInfo NewFont = TextBlockWidget->GetFont();
-						NewFont.Size = 11;;
-						TextBlockWidget->SetFont(NewFont);
-						if (const auto VBChild = VBPlayerScoreboard->AddChildToVerticalBox(TextBlockWidget))
-						{
-							VBChild->SetHorizontalAlignment(HAlign_Fill);
-							VBChild->SetVerticalAlignment(VAlign_Top);
-						}
-						TextBlockWidget->SetText(FText::FromString(PSGameplay->GetPlayerName() + " Kill:" + FString::FromInt(PSGameplay->GetPlayerKillScore()) + " Death:" + FString::FromInt(PSGameplay->GetPlayerDeathScore())));
-					}
-				}
+				UTextBlock* TextBlockWidget = WidgetTree->ConstructWidget<UTextBlock>(UTextBlock::StaticClass());
+					
+				FSlateFontInfo NewFont = TextBlockWidget->GetFont();
+				NewFont.Size = 11;;
+				TextBlockWidget->SetFont(NewFont);
+					
+				const auto VBChild = VBPlayerScoreboard->AddChildToVerticalBox(TextBlockWidget);
+				VBChild->SetHorizontalAlignment(HAlign_Fill);
+				VBChild->SetVerticalAlignment(VAlign_Top);
+			
+				TextBlockWidget->SetText(FText::FromString(PSGameplay->GetPlayerName() + " Kill:" + FString::FromInt(PSGameplay->GetPlayerKillScore()) + " Death:" + FString::FromInt(PSGameplay->GetPlayerDeathScore())));
 			}
 		}
 	}
 }
 
 
-void UMCCGameplayWidget::UpdateHealthBar(float CurrentHealth, float MaxHealth)
-{
-	if (ProgressBarHealth)
-	{
-		ProgressBarHealth->SetPercent(CurrentHealth / MaxHealth);
-
-		const ESlateVisibility NewVisibility = CurrentHealth <= 0.f ? ESlateVisibility::Visible : ESlateVisibility::Collapsed;
-		if (ProgressBarHealth->GetVisibility() != NewVisibility)
-		{
-			ProgressBarHealth->SetVisibility(NewVisibility);
-		}
-	}
-}
-
-
-void UMCCGameplayWidget::BindOnPlayerKillNotify()
+void UMCCGameplayWidget::BindGameStateDelegates()
 {
 	if (const auto GSGameplay = Cast<AMCCGSGameplay>(GetWorld()->GetGameState()))
 	{
 		GSGameplay->OnReceiveKill.AddDynamic(this,&UMCCGameplayWidget::OnReceiveKillNotify);
+		UE_LOG(LogTemp,Log,TEXT("OnReceiveKill binding complete"));
 	}
 	else
 	{
@@ -79,7 +59,13 @@ void UMCCGameplayWidget::OnReceiveKillNotify(APlayerState* Killer, APlayerState*
 	{
 		KillNotifyWidget->OnReceiveKillNotify(Killer , Victim);
 	}
-	UpdateScoreboard();
+	
+	FTimerHandle Handle;
+	GetWorld()->GetTimerManager().SetTimer(Handle , [this]()
+	{
+		UpdateScoreboard();
+	}, 0.1f, false);
+	
 }
 
 
@@ -87,10 +73,25 @@ void UMCCGameplayWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
+	GameState = GetWorld()->GetGameState();
+
 	FTimerHandle Handle;
 	GetWorld()->GetTimerManager().SetTimer(Handle , [this]()
 	{
-		BindOnPlayerKillNotify();
+		BindGameStateDelegates();
 		UpdateScoreboard();
 	}, 0.5f, false);
+}
+
+void UMCCGameplayWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
+{
+	Super::NativeTick(MyGeometry, InDeltaTime);
+
+	if (GameState)
+	{
+		if (GameState->PlayerArray.Num() != VBPlayerScoreboard->GetChildrenCount())
+		{
+			UpdateScoreboard();
+		}
+	}
 }

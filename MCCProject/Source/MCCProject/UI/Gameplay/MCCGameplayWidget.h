@@ -24,26 +24,25 @@ public:
 	
 	UPROPERTY(BlueprintReadOnly , EditAnywhere , meta = (BindWidget))
 	UVerticalBox* VBPlayerScoreboard;
-
-	UPROPERTY(BlueprintReadOnly , EditAnywhere , meta = (BindWidget))
-	UProgressBar* ProgressBarHealth;
-
+	
 	UFUNCTION(BlueprintCallable)
 	void UpdateScoreboard();
-
-	UFUNCTION(BlueprintCallable)
-	void UpdateHealthBar(float CurrentHealth , float MaxHealth);
 
 protected:
 	
 	UPROPERTY()
 	TArray<UTextBlock*> PlayerScoreboardTexts;
 
+	UPROPERTY()
+	AGameStateBase* GameState;
+
  	UFUNCTION()
-	void BindOnPlayerKillNotify();
+	void BindGameStateDelegates();
 
 	UFUNCTION()
 	void OnReceiveKillNotify(APlayerState* Killer ,APlayerState* Victim);
 	
 	virtual void NativeConstruct() override;
+	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 };
+

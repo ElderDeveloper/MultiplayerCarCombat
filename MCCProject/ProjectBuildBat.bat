@@ -1,0 +1,2 @@
+call "C:\Users\kemal\Desktop\UnrealEngine-5.1\Engine\Build\BatchFiles\RunUAT.bat" -nop4 BuildCookRun -project=C:\Users\kemal\Desktop\Projeler\MultiplayerCarCombat\MCCProject\MCCProject.uproject -platform=Win64 -clientconfig=Development -serverconfig=Development -server -servertarget=BattleAxesServer -build -cook -allmaps -stage -archive -archivedirectory=C:\Users\kemal\Desktop\Projeler\MultiplayerCarCombat\Package\
+pause

@@ -42,15 +42,15 @@ public:
 	// Click Input Action
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
 	UInputAction* SetDestinationClickAction;
-
-
+	
 	UFUNCTION()
 	void OnPlayerDeath(APlayerState* Killer);
 
 	UFUNCTION(BlueprintCallable , Category = "Gameplay")
-	virtual void RequestRespawn();
-	virtual void RequestRespawnDelay();
+	virtual void RequestRespawn(float Delay = 0.1f);
 
+	UFUNCTION(BlueprintCallable , Category = "Gameplay")
+	virtual void RequestRespawnDelay();
 
 protected:
 
@@ -64,9 +64,7 @@ protected:
 	float InputDownTime;
 	UPROPERTY()
 	UMCCGameplayWidget* GameplayWidget;
-
-	void UpdateHealthBar();
-
+	
 	// Input handlers for SetDestination action.
 	void OnInputStarted();
 	void OnSetDestinationTriggered();

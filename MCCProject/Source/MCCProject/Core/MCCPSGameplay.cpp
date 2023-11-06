@@ -15,12 +15,15 @@ void AMCCPSGameplay::AddPlayerKillScore(int32 ScorePoint)
 {
 	PlayerKillScore += ScorePoint;
 	ForceNetUpdate();
+	UE_LOG(LogTemp , Log , TEXT("AMCCPSGameplay::Player Kill Score %d") , PlayerDeathScore);
 }
 
 void AMCCPSGameplay::AddPlayerDeathScore(int32 ScorePoint)
 {
+
 	PlayerDeathScore += ScorePoint;
 	ForceNetUpdate();
+	UE_LOG(LogTemp , Log , TEXT("AMCCPSGameplay::Player Death Score %d") , PlayerDeathScore);
 }
 
 
@@ -28,5 +31,5 @@ void AMCCPSGameplay::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLi
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(AMCCPSGameplay, PlayerKillScore);
-	DOREPLIFETIME(AMCCPSGameplay , PlayerDeathScore);
+	DOREPLIFETIME(AMCCPSGameplay, PlayerDeathScore);
 }
